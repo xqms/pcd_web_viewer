@@ -161,11 +161,16 @@
 
 				function recomputeColorChannel(name, stats, numPoints) {
 					stats = stats[name];
+					var data = colors[name].data;
 
 					if(stats.min >= stats.max)
-						return;
+					{
+						// Extend to vertices.length
+						for(var i = data.length; i < geometry.vertices.length; ++i)
+							data[i] = new THREE.Color(0.87, 0.87, 0.87);
 
-					var data = colors[name].data;
+						return;
+					}
 
 					var start = stats.dirty ? 0 : colors[name].valid;
 					if(stats.dirty)
@@ -206,6 +211,8 @@
 
 				// Handle colors and pointsize
 				function onKeyDown(evt) {
+					console.log('key down');
+
 					// Increase/decrease point size
 					if (evt.keyCode == 189 || evt.keyCode == 109 || evt.keyCode == 173)
 					{
@@ -254,8 +261,6 @@
 							geometry.vertices = vertices;
 							geometry.colors = colors[cname].data;
 
-							console.log('colors:', numPoints, geometry.colors.length);
-
 							pointcloud = new THREE.Points(geometry, material);
 							scene.add(pointcloud);
 						}
@@ -273,6 +278,7 @@
 						// Remove the progressbar
 						$("#progressbar-container").hide();
 						$("#controls-browser").show();
+
 						document.addEventListener("keydown", onKeyDown, false);
 					}
 				);
