@@ -97,10 +97,8 @@ function streamURI(uri, options)
 					function pumpStep() {
 						reader.read().then(function (result) {
 							if (result.done) {
-								console.log('done');
-								// Remove the progressbar
-								$("#progressbar-container").hide();
-								$("#controls-browser").show();
+								if(options.success)
+									options.success();
 
 								return;
 							}
