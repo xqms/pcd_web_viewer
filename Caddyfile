@@ -1,0 +1,10 @@
+localhost
+
+gzip
+browse
+ext .html
+websocket /echo cat
+log ../access.log
+header /api Access-Control-Allow-Origin *
+header /xtion.bin Content-Type application/octet-stream
+
