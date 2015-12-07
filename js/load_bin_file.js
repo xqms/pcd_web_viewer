@@ -3,7 +3,7 @@
  * Load a specially formatted .bin file
  */
 
-function loadBinFile(uri, vertices, colors, progress, success)
+function loadBinFile(uri, transform, vertices, colors, progress, success)
 {
 	// Collect some statistics during loading (useful for pointcloud coloring)
 	var stats = new Object();
@@ -46,20 +46,23 @@ function loadBinFile(uri, vertices, colors, progress, success)
 			return;
 		}
 
-		var x = view.getFloat32(off + 0, true);
-		var y = view.getFloat32(off + 4, true);
-		var z = view.getFloat32(off + 8, true);
+		var vec = new THREE.Vector3(
+			view.getFloat32(off + 0, true),
+			view.getFloat32(off + 4, true),
+			view.getFloat32(off + 8, true)
+		);
+
+		vec.applyMatrix4(transform);
+
 		var r = view.getUint8(off + 12);
 		var g = view.getUint8(off + 13);
 		var b = view.getUint8(off + 14);
 
-		updateStats(x, stats.x);
-		updateStats(y, stats.y);
-		updateStats(z, stats.z);
+		updateStats(vec.x, stats.x);
+		updateStats(vec.y, stats.y);
+		updateStats(vec.z, stats.z);
 
-		vertices[numPoints].x = x;
-		vertices[numPoints].y = y;
-		vertices[numPoints].z = z;
+		vertices[numPoints] = vec;
 		colors[numPoints].r = r / 255.0;
 		colors[numPoints].g = g / 255.0;
 		colors[numPoints].b = b / 255.0;

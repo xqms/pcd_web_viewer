@@ -24,7 +24,20 @@
 		<script src="js/jquery.binarytransport.js"></script>
 		<script src="js/stream.js"></script>
 		<script src="js/load_bin_file.js"></script>
+		<script src="js/load_pcd_file.js"></script>
 		<script>
+			if (!String.prototype.endsWith) {
+				String.prototype.endsWith = function(searchString, position) {
+					var subjectString = this.toString();
+					if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+						position = subjectString.length;
+					}
+					position -= searchString.length;
+					var lastIndex = subjectString.indexOf(searchString, position);
+					return lastIndex !== -1 && lastIndex === position;
+				};
+			}
+
 			var getUrlParameter = function getUrlParameter(sParam) {
 				var sPageURL = decodeURIComponent(window.location.search.substring(1)),
 					sURLVariables = sPageURL.split('&'),
@@ -249,7 +262,34 @@
 				var bufferSize = 0;
 				var finalStats = null;
 
-				loadBinFile(getUrlParameter('load'), geometry.vertices, colors['rgb'].data,
+				var load = null;
+				var filename = getUrlParameter('load');
+				if(filename.endsWith('.pcd'))
+					load = loadPCDFile;
+				else
+					load = loadBinFile;
+
+				var transform = new THREE.Matrix4();
+
+				var euler = new THREE.Euler(0.0, 0.0, 0.0, 'XYZ');
+
+				var rollStr = getUrlParameter('roll');
+				if(rollStr)
+					euler.x = parseFloat(rollStr);
+
+				var pitchStr = getUrlParameter('pitch');
+				if(pitchStr)
+					euler.y = parseFloat(pitchStr);
+
+				var yawStr = getUrlParameter('yaw');
+				if(yawStr)
+					euler.z = parseFloat(yawStr);
+
+				transform.makeRotationFromEuler(euler);
+
+				console.log(transform);
+
+				load(filename, transform, geometry.vertices, colors['rgb'].data,
 					function(stats, numPoints) {
 						colors['rgb'].valid = numPoints;
 						finalStats = stats;
