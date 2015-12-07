@@ -242,6 +242,7 @@
 
 				// move target to panned location
 				this.target.add( panOffset );
+// 				console.log(this.target);
 
 				offset.x = radius * Math.sin( phi ) * Math.sin( theta );
 				offset.y = radius * Math.cos( phi );
@@ -366,6 +367,8 @@
 		// Mouse buttons
 		this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
 
+		this.visualizer = null;
+
 		////////////
 		// internals
 
@@ -386,6 +389,7 @@
 		var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
 
 		var state = STATE.NONE;
+		var oldState = state;
 
 		// for reset
 
@@ -417,12 +421,19 @@
 
 			}
 
-			if ( constraint.update() === true ) {
+			if ( constraint.update() === true || oldState != state)
+			{
+				if(this.visualizer)
+				{
+					this.visualizer.visible = (state != STATE.NONE);
+					this.visualizer.position.copy(constraint.target);
+					this.visualizer.updateMatrix();
+				}
 
 				this.dispatchEvent( changeEvent );
-
 			}
 
+			oldState = state;
 		};
 
 		this.reset = function () {
@@ -453,7 +464,6 @@
 		}
 
 		function onMouseDown( event ) {
-
 			if ( scope.enabled === false ) return;
 
 			event.preventDefault();
@@ -485,7 +495,6 @@
 			}
 
 			if ( state !== STATE.NONE ) {
-
 				document.addEventListener( 'mousemove', onMouseMove, false );
 				document.addEventListener( 'mouseup', onMouseUp, false );
 				scope.dispatchEvent( startEvent );
@@ -554,6 +563,8 @@
 		}
 
 		function onMouseUp( /* event */ ) {
+			if(scope.visualizer)
+				scope.visualizer.visible = false;
 
 			if ( scope.enabled === false ) return;
 
@@ -561,7 +572,6 @@
 			document.removeEventListener( 'mouseup', onMouseUp, false );
 			scope.dispatchEvent( endEvent );
 			state = STATE.NONE;
-
 		}
 
 		function onMouseWheel( event ) {
@@ -768,7 +778,7 @@
 		}
 
 		function contextmenu( event ) {
-
+			console.log('context');
 			event.preventDefault();
 
 		}

@@ -113,6 +113,18 @@
 				controls.keys = [65, 17, 18];
 				controls.addEventListener('change', render);
 
+				var geometry = new THREE.SphereGeometry( 0.1, 32, 32 );
+				var material = new THREE.MeshBasicMaterial({
+					color: 0xffff00,
+					transparent: true,
+					opacity: 0.5
+				});
+				controls.visualizer = new THREE.Mesh( geometry, material );
+				scene.add( controls.visualizer );
+
+				controls.visualizer.visible = false;
+
+
 				// Render loop
 				function animate() {
 					requestAnimationFrame(animate);
