@@ -14,7 +14,7 @@ Features:
     while the file is being downloaded.
 
 `pcd_web_viewer` is based on [srv/pointcloud_web_viewer], but was heavily
-modified to parse binary PCD files.
+modified to parse binary and ascii PCD files.
 
 Usage
 -----
