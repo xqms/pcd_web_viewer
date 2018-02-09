@@ -6,7 +6,7 @@ pcd_web_viewer
 
 Features:
 
-  * Reads binary PCD files directly
+  * Reads binary and ascii PCD files directly
   * Colorization using RGB channel, or coloring according to X, Y, or Z value
   * Configuration through URL
   * JavaScript library usable in own HTML sites
@@ -23,7 +23,7 @@ Just put the repository somewhere where a web server can serve it. For quick
 testing, you can install [caddy] and run `caddy` in the repository.
 
 Visit `viewer.html?load=data/pointcloud.pcd` with your browser, where
-`data/pointcloud.pcd` is a binary PCD file relative to `viewer.html`.
+`data/pointcloud.pcd` is a binary or a ascii PCD file relative to `viewer.html`.
 
 License
 -------
