@@ -35,6 +35,7 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 
 	var STATE_HEADER = 0;
 	var STATE_DATA_BINARY = 1;
+	var STATE_DATA_ASCII = 2;
 	var parseState = STATE_HEADER;
 
 	function handleHeaderLine(line) {
@@ -167,7 +168,7 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 
 				switch(items[1]) {
 					case 'ascii':
-						alert('ASCII encoding is not supported at the moment');
+						parseState = STATE_DATA_ASCII;
 						break;
 					case 'binary':
 						parseState = STATE_DATA_BINARY;
@@ -234,6 +235,39 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 		numPoints++;
 	}
 
+	function handleAsciiPointData(x,y,z) {
+		function updateStats(v, stats) {
+			if(v < stats.min) {
+				stats.min = v - 0.3;
+				stats.dirty = true;
+			}
+			if(v > stats.max) {
+				stats.max = v + 0.3;
+				stats.dirty = true;
+			}
+		}
+
+		var vec = new THREE.Vector3(0.0, 0.0, 0.0);
+
+		vec.x = x;
+		vec.y = y;
+		vec.z = z;
+		colors[numPoints] = new THREE.Color(0.87, 0.87, 0.87);
+
+		vec.applyMatrix4(transform);
+
+		updateStats(vec.x, stats.x);
+		updateStats(vec.y, stats.y);
+		updateStats(vec.z, stats.z);
+
+		if(vertices[numPoints] == undefined)
+			console.log('HATA');
+
+		vertices[numPoints] = vec;
+
+		numPoints++;
+	}
+	
 	function handleBinaryData(buffer, off) {
 		var view = new DataView(buffer);
 
@@ -265,6 +299,25 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 		leftoverData = newleftover;
 	}
 
+	function handleAsciiData(buffer, off) {
+		var view = new DataView(buffer);
+
+		for(; off < buffer.byteLength; ++off) {
+			var c = view.getUint8(off);
+
+			if(c == 10) // '\n'
+			{
+				var res = lineBuffer.split(" ");
+				handleAsciiPointData(res[0],res[1],res[2]);
+				lineBuffer = "";
+				off = off + 1;
+			}
+			lineBuffer += String.fromCharCode(c);
+		}
+		return off;
+	}
+
+	
 	var lineBuffer = "";
 
 	function readHeaderLine(buffer, off) {
@@ -281,6 +334,7 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 			}
 
 			lineBuffer += String.fromCharCode(c);
+			//console.log(lineBuffer);
 		}
 
 		return off;
@@ -290,7 +344,7 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 		stats.x.dirty = false;
 		stats.y.dirty = false;
 		stats.z.dirty = false;
-
+		
 		var off = 0;
 		while(off < buffer.byteLength)
 		{
@@ -301,6 +355,10 @@ function loadPCDFile(uri, transform, vertices, colors, progress, success)
 					break;
 				case STATE_DATA_BINARY:
 					handleBinaryData(buffer, off);
+					off = buffer.byteLength;
+					break;
+				case STATE_DATA_ASCII:
+					handleAsciiData(buffer, off);
 					off = buffer.byteLength;
 					break;
 			}
